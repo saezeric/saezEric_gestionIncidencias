@@ -1,0 +1,63 @@
+[
+  {
+    "id": 1,
+    "fecha_creacion": "2025-02-21T08:30:00Z",
+    "aula": "Aula 101",
+    "ordenador": "PC-12",
+    "descripcion": "La pantalla no enciende",
+    "estado": "pendiente",
+    "usuario_creador": "user1@example.com",
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "admin@example.com",
+        "fecha": "2025-02-21T09:00:00Z",
+        "texto": "Revisar conexión del monitor y cable de corriente"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "fecha_creacion": "2025-02-20T14:15:00Z",
+    "aula": "Aula 203",
+    "ordenador": "PC-7",
+    "descripcion": "El teclado no responde",
+    "estado": "resuelto",
+    "usuario_creador": "user2@example.com",
+    "comentarios": [
+      {
+        "id": 2,
+        "autor": "profesor@example.com",
+        "fecha": "2025-02-20T15:00:00Z",
+        "texto": "Teclado reemplazado, funcionando correctamente"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "fecha_creacion": "2025-02-19T10:45:00Z",
+    "aula": "Aula 305",
+    "ordenador": "PC-3",
+    "descripcion": "No hay conexión a internet",
+    "estado": "pendiente",
+    "usuario_creador": "user3@example.com",
+    "comentarios": []
+  },
+  {
+    "id": 4,
+    "fecha_creacion": "2025-02-18T12:30:00Z",
+    "aula": "Aula 102",
+    "ordenador": "PC-15",
+    "descripcion": "El ordenador se apaga solo",
+    "estado": "pendiente",
+    "usuario_creador": "user4@example.com",
+    "comentarios": [
+      {
+        "id": 3,
+        "autor": "admin@example.com",
+        "fecha": "2025-02-18T13:00:00Z",
+        "texto": "Posible sobrecalentamiento, verificar ventilación"
+      }
+    ]
+  }
+]
