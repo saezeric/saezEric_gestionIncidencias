@@ -5,6 +5,7 @@ import { Login } from "./vistas/Login";
 import { Registro } from "./vistas/Registro";
 import { Panel } from "./vistas/Panel";
 import { Comentarios } from "./vistas/Comentarios";
+import { Modal } from "./components/Modal";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="registro" element={<Registro />}></Route>
         <Route path="comentarios" element={<Comentarios />}></Route>
       </Routes>
+      <Modal />
     </Router>
   );
 }
