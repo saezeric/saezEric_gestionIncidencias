@@ -6,6 +6,9 @@ import { Registro } from "./vistas/Registro";
 import { Panel } from "./vistas/Panel";
 import { Comentarios } from "./vistas/Comentarios";
 import { Modal } from "./components/Modal";
+import { NuevoTicket } from "./vistas/NuevoTicket";
+import { EditarTicket } from "./vistas/EditarTicket";
+import { VistaTicket } from "./vistas/VistaTicket";
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
         <Route path="login" element={<Login />}></Route>
         <Route path="registro" element={<Registro />}></Route>
         <Route path="comentarios" element={<Comentarios />}></Route>
+        <Route path="nuevo-ticket" element={<NuevoTicket />}></Route>
+        <Route path="editar-ticket/:id" element={<EditarTicket />}></Route>
+        <Route path="vista-ticket/:id" element={<VistaTicket />}></Route>
       </Routes>
       <Modal />
     </Router>

@@ -1,18 +1,31 @@
-import React from "react";
-import dades_tickets from "../dades_tiquets.json";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export function TiquetsPendents() {
-  const textDadesTickets = JSON.stringify(dades_tickets); // Convertimos el array de objetos a string
-  localStorage.setItem("Dades Tickets", textDadesTickets); // Seteamos el array convertido a string en nuestro Local Storage
-  // Ahora captamos los valores para parsearlos a objeto de nuevo y de esta manera poder modificar, filtrar, buscar...
-  const stringObj = localStorage.getItem("Dades Tickets"); // Captamos los valores del Local Storage
-  const objParseado = JSON.parse(stringObj); // Parseamos el string a objeto y ahora podemos realizar acciones con el
+  const [arrayPendientes, setArrayPendientes] = useState([]);
+  const navigate = useNavigate();
 
-  // Hacemos un filtrado en el array de nuestro local storage para captar e introducir valores en una constante
-  // Hacemos un filter de parseDadesTickets para obtener los tickets segun su estado
-  const arrayPendientes = objParseado.filter(
-    (objeto) => objeto.estado == "pendiente"
-  );
+  useEffect(() => {
+    const ticketsGuardados =
+      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    setArrayPendientes(
+      ticketsGuardados.filter((ticket) => ticket.estado === "pendiente")
+    );
+  }, []);
+
+  const handleRowClick = (id) => {
+    navigate(`/vista-ticket/${id}`);
+  };
+
+  const handleDelete = (id) => {
+    const ticketsGuardados =
+      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    const nuevosTickets = ticketsGuardados.filter((ticket) => ticket.id !== id);
+    localStorage.setItem("Dades Tickets", JSON.stringify(nuevosTickets));
+    setArrayPendientes(
+      nuevosTickets.filter((ticket) => ticket.estado === "pendiente")
+    );
+  };
 
   return (
     <>
@@ -23,17 +36,22 @@ export function TiquetsPendents() {
             <th>Código</th>
             <th>Fecha</th>
             <th>Aula</th>
-            <th>Grupo</th>
             <th>Ordenador</th>
-            <th>Descripción</th>
+            <th>Descripcion</th>
             <th>Alumno</th>
             <th></th>
-            <th></th>
+            <th>Editar</th>
+            <th>Comentarios</th>
+            <th>Eliminar</th>
           </tr>
         </thead>
         <tbody>
           {arrayPendientes.map((ticket, index) => (
-            <tr key={index}>
+            <tr
+              key={index}
+              onClick={() => handleRowClick(ticket.id)}
+              style={{ cursor: "pointer" }}
+            >
               <td>{ticket.id}</td>
               <td>{ticket.fecha_creacion}</td>
               <td>{ticket.aula}</td>
@@ -41,28 +59,51 @@ export function TiquetsPendents() {
               <td>{ticket.descripcion}</td>
               <td>{ticket.usuario_creador}</td>
               <td>
-                <button className="btn btn-success" title="Resolver ticket">
+                <Link
+                  to="#"
+                  className="btn btn-success"
+                  title="Resolver ticket"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   Resolver
-                </button>
+                </Link>
               </td>
               <td>
-                <button className="btn btn-warning" title="Añadir comentario">
+                <Link
+                  to={`/editar-ticket/${ticket.id}`}
+                  className="btn btn-warning"
+                  title="Editar Ticket"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <i
                     className="bi  bi-pencil"
                     data-bs-toggle="modal"
                     data-bs-target="#exampleModal"
                   ></i>
-                </button>
+                </Link>
               </td>
               <td>
-                <button className="btn btn-info" title="Ver comentarios">
+                <Link
+                  to="/comentarios"
+                  className="btn btn-info"
+                  title="Ver comentarios"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <i className="bi bi-chat-left-text"></i>
-                </button>
+                </Link>
               </td>
               <td>
-                <button className="btn btn-danger" title="Eliminar ticket">
+                <Link
+                  to="#"
+                  className="btn btn-danger"
+                  title="Eliminar ticket"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(ticket.id);
+                  }}
+                >
                   <i className="bi bi-trash3"></i>
-                </button>
+                </Link>
               </td>
             </tr>
           ))}

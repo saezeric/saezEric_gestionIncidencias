@@ -1,18 +1,17 @@
-import React from "react";
-import dades_tickets from "../dades_tiquets.json";
+import React, { useEffect, useState } from "react";
 
 export function TiquetsResolts() {
-  const textDadesTickets = JSON.stringify(dades_tickets); // Convertimos el array de objetos a string
-  localStorage.setItem("Dades Tickets", textDadesTickets); // Seteamos el array convertido a string en nuestro Local Storage
-  // Ahora captamos los valores para parsearlos a objeto de nuevo y de esta manera poder modificar, filtrar, buscar...
-  const stringObj = localStorage.getItem("Dades Tickets"); // Captamos los valores del Local Storage
-  const objParseado = JSON.parse(stringObj); // Parseamos el string a objeto y ahora podemos realizar acciones con el
+  const [arrayResueltos, setArrayResueltos] = useState([]);
 
-  // Hacemos un filtrado en el array de nuestro local storage para captar e introducir valores en una constante
-  // Hacemos un filter de parseDadesTickets para obtener los tickets segun su estado
-  const arrayResueltos = objParseado.filter(
-    (objeto) => objeto.estado == "resuelto"
-  );
+  useEffect(() => {
+    const stringObj = localStorage.getItem("Dades Tickets");
+    if (stringObj) {
+      const objParseado = JSON.parse(stringObj);
+      setArrayResueltos(
+        objParseado.filter((objeto) => objeto.estado === "resuelto")
+      );
+    }
+  }, []);
 
   return (
     <>
@@ -21,13 +20,13 @@ export function TiquetsResolts() {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Fecha</th>
             <th>Fecha resuelto</th>
             <th>Aula</th>
-            <th>Grupo</th>
             <th>Ordenador</th>
-            <th>Descripción</th>
-            <th>Acciones</th>
+            <th>Descripcion</th>
+            <th>Alumno</th>
+            <th>Comentarios</th>
+            <th>Eliminar</th>
           </tr>
         </thead>
         <tbody>

@@ -18,9 +18,6 @@ export function Header() {
               <Link to="/registro" className="btn btn-secondary ms-2">
                 REGISTRO
               </Link>
-              <Link to="/comentarios" className="btn btn-secondary ms-2">
-                COMENTARIOS
-              </Link>
             </div>
             <div>
               <span>administrador@fpllefia.com</span>
