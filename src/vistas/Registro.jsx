@@ -7,9 +7,11 @@ export function Registro() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState(""); // Estado para mensaje de error
 
   const handleChange = (e) => {
     setUsuario({ ...usuario, [e.target.name]: e.target.value });
+    setError(""); // Limpiar error cuando el usuario escriba
   };
 
   const handleSubmit = (e) => {
@@ -21,7 +23,7 @@ export function Registro() {
     // Verificar si el email ya existe
     for (let i = 0; i < usuariosGuardados.length; i++) {
       if (usuariosGuardados[i].email === usuario.email) {
-        alert("Este email ya está registrado.");
+        setError("Este email ya está registrado.");
         return;
       }
     }
@@ -42,11 +44,14 @@ export function Registro() {
       rol: "estandar",
     };
 
-    // Guardar el nuevo usuario
+    // Guardar el nuevo usuario en localStorage
     usuariosGuardados.push(nuevoUsuario);
     localStorage.setItem("dades_usuaris", JSON.stringify(usuariosGuardados));
 
-    alert("Registro exitoso, ahora puedes iniciar sesión.");
+    // Guardar mensaje de éxito en localStorage
+    localStorage.setItem("registro_exitoso", usuario.email);
+
+    // Redirigir al login
     navigate("/login");
   };
 
@@ -59,6 +64,7 @@ export function Registro() {
           className="form p-4 border shadow mt-5 mx-auto"
           style={{ width: "400px" }}
         >
+          {/* Email */}
           <label htmlFor="email" className="mt-2 form-label">
             Email:{" "}
           </label>
@@ -66,13 +72,15 @@ export function Registro() {
             id="email"
             name="email"
             type="email"
-            className="form-control"
+            className={`form-control ${error ? "is-invalid" : ""}`}
             placeholder="usuario@mail.com"
             value={usuario.email}
             onChange={handleChange}
             required
           />
+          {error && <div className="invalid-feedback">{error}</div>}
 
+          {/* Contraseña */}
           <label htmlFor="password" className="mt-2 form-label">
             Contraseña:{" "}
           </label>
