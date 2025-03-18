@@ -1,8 +1,10 @@
 // Login.jsx
 import React, { useEffect, useState, useContext } from "react";
 import UserContext from "../contexts/UserContext"; // Importar el contexto
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
+  const navigate = useNavigate();
   const [mensajeExito, setMensajeExito] = useState("");
   const [credenciales, setCredenciales] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -49,7 +51,7 @@ export function Login() {
 
     // Iniciar sesión usando el contexto
     login(usuarioEncontrado);
-    alert("Inicio de sesión exitoso.");
+    navigate("/");
   };
 
   return (
