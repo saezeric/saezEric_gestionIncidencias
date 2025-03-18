@@ -5,9 +5,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import App from "./App.jsx";
 import "./styles/custom.scss";
 import "./styles/bootstrap.scss";
+import UserProvider from "./contexts/UserProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <UserProvider>
+      <App />
+    </UserProvider>
   </StrictMode>
 );
