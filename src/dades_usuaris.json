@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "nombre": "Carlos Pérez",
+    "email": "user1@example.com",
+    "contraseña": "1234",
+    "rol": "estandar"
+  },
+  {
+    "id": 2,
+    "nombre": "Lucía Gómez",
+    "email": "user2@example.com",
+    "contraseña": "abcd",
+    "rol": "estandar"
+  },
+  {
+    "id": 3,
+    "nombre": "David Rodríguez",
+    "email": "user3@example.com",
+    "contraseña": "qwerty",
+    "rol": "estandar"
+  },
+  {
+    "id": 4,
+    "nombre": "Ana Martínez",
+    "email": "user4@example.com",
+    "contraseña": "5678",
+    "rol": "estandar"
+  },
+  {
+    "id": 5,
+    "nombre": "Profesor Juan",
+    "email": "profesor@example.com",
+    "contraseña": "prof2024",
+    "rol": "profesor"
+  },
+  {
+    "id": 6,
+    "nombre": "Admin María",
+    "email": "admin@example.com",
+    "contraseña": "admin1234",
+    "rol": "admin"
+  }
+]

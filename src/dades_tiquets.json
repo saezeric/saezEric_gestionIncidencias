@@ -1,0 +1,70 @@
+[
+  {
+    "id": 1,
+    "fecha_creacion": "21/02/2025",
+    "aula": "Aula 101",
+    "ordenador": "PC-12",
+    "descripcion": "La pantalla no enciende",
+    "estado": "pendiente",
+    "usuario_creador": "user1@example.com",
+    "comentarios": [
+      {
+        "id": 1,
+        "autor": "admin@example.com",
+        "fecha": "22/02/2025",
+        "texto": "Revisar conexión del monitor y cable de corriente"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "fecha_creacion": "20/02/2025",
+    "aula": "Aula 203",
+    "ordenador": "PC-7",
+    "descripcion": "El teclado no responde",
+    "estado": "resuelto",
+    "usuario_creador": "user2@example.com",
+    "comentarios": [
+      {
+        "id": 2,
+        "autor": "profesor@example.com",
+        "fecha": "21/02/2025",
+        "texto": "Teclado reemplazado, funcionando correctamente"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "fecha_creacion": "19/02/2025",
+    "aula": "Aula 305",
+    "ordenador": "PC-3",
+    "descripcion": "No hay conexión a internet",
+    "estado": "resuelto",
+    "usuario_creador": "user3@example.com",
+    "comentarios": [
+      {
+        "id": 3,
+        "autor": "profesor@example.com",
+        "fecha": "2025-02-19T12:56:32Z",
+        "texto": "Cable Ethernet estropeado remplazado, internet funcionando correctamente"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "fecha_creacion": "18/02/2025",
+    "aula": "Aula 102",
+    "ordenador": "PC-15",
+    "descripcion": "El ordenador se apaga solo",
+    "estado": "pendiente",
+    "usuario_creador": "user4@example.com",
+    "comentarios": [
+      {
+        "id": 3,
+        "autor": "admin@example.com",
+        "fecha": "2025-02-18T13:00:00Z",
+        "texto": "Posible sobrecalentamiento, verificar ventilación"
+      }
+    ]
+  }
+]
