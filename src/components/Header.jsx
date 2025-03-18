@@ -1,7 +1,11 @@
-import React from "react";
+// Header.jsx
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+import UserContext from "../contexts/UserContext"; // Importar el contexto
 
 export function Header() {
+  const { user } = useContext(UserContext); // Obtener el usuario del contexto
+
   return (
     <>
       <header>
@@ -20,7 +24,8 @@ export function Header() {
               </Link>
             </div>
             <div>
-              <span>administrador@fpllefia.com</span>
+              {/* Mostrar el nombre del usuario si está logueado */}
+              {user && <span>{user.nombre}</span>}
             </div>
           </div>
         </nav>
