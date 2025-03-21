@@ -5,12 +5,19 @@ export function TiquetsResolts() {
   const [arrayResueltos, setArrayResueltos] = useState([]);
   const navigate = useNavigate();
 
+  // Cargar tickets al montar el componente y cuando localStorage cambie
   useEffect(() => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    setArrayResueltos(
-      ticketsGuardados.filter((ticket) => ticket.estado === "resuelto")
-    );
+    const actualizarTickets = () => {
+      const ticketsGuardados =
+        JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+      setArrayResueltos(
+        ticketsGuardados.filter((ticket) => ticket.estado === "resuelto")
+      );
+    };
+
+    actualizarTickets();
+    window.addEventListener("storage", actualizarTickets);
+    return () => window.removeEventListener("storage", actualizarTickets);
   }, []);
 
   const handleRowClick = (id) => {

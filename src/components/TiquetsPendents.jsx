@@ -5,12 +5,19 @@ export function TiquetsPendents() {
   const [arrayPendientes, setArrayPendientes] = useState([]);
   const navigate = useNavigate();
 
+  // Cargar tickets al montar el componente y cuando localStorage cambie
   useEffect(() => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    setArrayPendientes(
-      ticketsGuardados.filter((ticket) => ticket.estado === "pendiente")
-    );
+    const actualizarTickets = () => {
+      const ticketsGuardados =
+        JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+      setArrayPendientes(
+        ticketsGuardados.filter((ticket) => ticket.estado === "pendiente")
+      );
+    };
+
+    actualizarTickets();
+    window.addEventListener("storage", actualizarTickets);
+    return () => window.removeEventListener("storage", actualizarTickets);
   }, []);
 
   const handleRowClick = (id) => {
@@ -27,6 +34,27 @@ export function TiquetsPendents() {
     );
   };
 
+  const handleResolver = (id) => {
+    const ticketsGuardados =
+      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+
+    const nuevosTickets = ticketsGuardados.map((ticket) => {
+      if (ticket.id === id) {
+        return {
+          ...ticket,
+          estado: "resuelto",
+          fecha_resolucion: new Date().toLocaleDateString("es-ES"),
+        };
+      }
+      return ticket;
+    });
+
+    localStorage.setItem("Dades Tickets", JSON.stringify(nuevosTickets));
+
+    // Disparar evento para actualizar otros componentes
+    window.dispatchEvent(new Event("storage"));
+  };
+
   return (
     <>
       <h2 className="mt-5">Tickets pendientes</h2>
@@ -37,18 +65,18 @@ export function TiquetsPendents() {
             <th>Fecha</th>
             <th>Aula</th>
             <th>Ordenador</th>
-            <th>Descripcion</th>
+            <th>Descripción</th>
             <th>Alumno</th>
-            <th></th>
+            <th>Resolver</th>
             <th>Editar</th>
             <th>Comentarios</th>
             <th>Eliminar</th>
           </tr>
         </thead>
         <tbody>
-          {arrayPendientes.map((ticket, index) => (
+          {arrayPendientes.map((ticket) => (
             <tr
-              key={index}
+              key={ticket.id}
               onClick={() => handleRowClick(ticket.id)}
               style={{ cursor: "pointer" }}
             >
@@ -63,7 +91,10 @@ export function TiquetsPendents() {
                   to="#"
                   className="btn btn-success"
                   title="Resolver ticket"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleResolver(ticket.id);
+                  }}
                 >
                   Resolver
                 </Link>
@@ -75,11 +106,7 @@ export function TiquetsPendents() {
                   title="Editar Ticket"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <i
-                    className="bi  bi-pencil"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  ></i>
+                  <i className="bi bi-pencil"></i>
                 </Link>
               </td>
               <td>
