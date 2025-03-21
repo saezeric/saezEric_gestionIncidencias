@@ -65,7 +65,7 @@ export function TiquetsResolts() {
               <td>{ticket.usuario_creador}</td>
               <td>
                 <Link
-                  to={`/comentarios`}
+                  to={`/comentarios/${ticket.id}`}
                   className="btn btn-info"
                   title="Ver comentarios"
                   onClick={(e) => e.stopPropagation()}
