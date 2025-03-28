@@ -9,6 +9,7 @@ import { Modal } from "./components/Modal";
 import { NuevoTicket } from "./vistas/NuevoTicket";
 import { EditarTicket } from "./vistas/EditarTicket";
 import { VistaTicket } from "./vistas/VistaTicket";
+import { PanelAdmin } from "./vistas/PanelAdmin";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="editar-ticket/:id" element={<EditarTicket />}></Route>
         <Route path="vista-ticket/:id" element={<VistaTicket />}></Route>
         <Route path="comentarios/:id" element={<Comentarios />}></Route>
+        <Route path="panel-admin" element={<PanelAdmin />}></Route>
       </Routes>
       <Modal />
     </Router>

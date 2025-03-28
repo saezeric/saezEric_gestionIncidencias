@@ -41,7 +41,7 @@ export function Registro() {
       nombre: usuario.email.split("@")[0],
       email: usuario.email,
       contraseña: usuario.password,
-      rol: "estandar",
+      rol: "alumno",
     };
 
     // Guardar el nuevo usuario en localStorage

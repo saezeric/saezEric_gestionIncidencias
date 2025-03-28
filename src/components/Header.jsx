@@ -42,6 +42,9 @@ export function Header() {
                   </Link>
                 </>
               )}
+              <Link to="/panel-admin" className="btn btn-secondary">
+                PANEL ADMIN
+              </Link>
             </div>
 
             {/* Contenedor para el nombre del usuario y el botón de cerrar sesión (derecha) */}
