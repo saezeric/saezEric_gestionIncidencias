@@ -111,7 +111,7 @@ export function TiquetsPendents() {
               </td>
               <td>
                 <Link
-                  to="/comentarios"
+                  to={`/comentarios/${ticket.id}`}
                   className="btn btn-info"
                   title="Ver comentarios"
                   onClick={(e) => e.stopPropagation()}

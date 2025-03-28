@@ -18,10 +18,10 @@ function App() {
         <Route path="/" element={<Panel />}></Route>
         <Route path="login" element={<Login />}></Route>
         <Route path="registro" element={<Registro />}></Route>
-        <Route path="comentarios" element={<Comentarios />}></Route>
         <Route path="nuevo-ticket" element={<NuevoTicket />}></Route>
         <Route path="editar-ticket/:id" element={<EditarTicket />}></Route>
         <Route path="vista-ticket/:id" element={<VistaTicket />}></Route>
+        <Route path="comentarios/:id" element={<Comentarios />}></Route>
       </Routes>
       <Modal />
     </Router>
