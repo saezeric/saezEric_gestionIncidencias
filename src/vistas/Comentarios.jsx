@@ -3,18 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Comentario } from "../components/Comentario";
 
 export function Comentarios() {
-  const { id } = useParams(); // Obtener la ID del ticket desde la URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [fechaComentario, setFechaComentario] = useState(() => {
-    const hoy = new Date();
-    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(hoy.getDate()).padStart(2, "0")}T${String(
-      hoy.getHours()
-    ).padStart(2, "0")}:${String(hoy.getMinutes()).padStart(2, "0")}`;
+    return new Date().toISOString().slice(0, 16);
   });
 
   useEffect(() => {
@@ -23,22 +17,8 @@ export function Comentarios() {
     const ticketEncontrado = ticketsGuardados.find(
       (ticket) => ticket.id === parseInt(id)
     );
-    if (ticketEncontrado) {
-      ticketEncontrado.comentarios = ticketEncontrado.comentarios.map(
-        (comentario) => ({
-          ...comentario,
-          fecha: formatearFecha(comentario.fecha),
-        })
-      );
-    }
     setTicket(ticketEncontrado);
   }, [id]);
-
-  const formatearFecha = (fecha) => {
-    const date = new Date(fecha);
-    if (isNaN(date.getTime())) return "Fecha inválida"; // Previene NaN/NaN/NaN
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-  };
 
   const handleAddComment = () => {
     if (!nuevoComentario.trim() || !fechaComentario) return;
@@ -60,7 +40,7 @@ export function Comentarios() {
       const nuevoComentarioObj = {
         id: nuevoId,
         autor: "Usuario",
-        fecha: fechaComentario, // Guardamos en formato ISO (YYYY-MM-DDTHH:mm)
+        fecha: fechaComentario, // Se guarda en formato ISO compatible
         texto: nuevoComentario,
       };
 
@@ -68,7 +48,7 @@ export function Comentarios() {
       localStorage.setItem("Dades Tickets", JSON.stringify(ticketsGuardados));
       setTicket({ ...ticketsGuardados[ticketIndex] });
       setNuevoComentario("");
-      setFechaComentario(new Date().toISOString().slice(0, 16)); // Establece la fecha de nuevo correctamente
+      setFechaComentario(new Date().toISOString().slice(0, 16));
     }
   };
 
@@ -80,12 +60,10 @@ export function Comentarios() {
     );
 
     if (ticketIndex !== -1) {
-      // Filtrar los comentarios eliminando el seleccionado
       ticketsGuardados[ticketIndex].comentarios = ticketsGuardados[
         ticketIndex
       ].comentarios.filter((comentario) => comentario.id !== commentId);
 
-      // Guardar en localStorage y actualizar el estado
       localStorage.setItem("Dades Tickets", JSON.stringify(ticketsGuardados));
       setTicket({ ...ticketsGuardados[ticketIndex] });
     }
