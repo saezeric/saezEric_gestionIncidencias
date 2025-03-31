@@ -16,16 +16,22 @@ export function NuevoTicket() {
 
   // Efecto que actualizara la ID al ultimo ID posible
   useEffect(() => {
-    //Obtener los tickets actuales del localStorage
     const ticketsGuardados =
       JSON.parse(localStorage.getItem("Dades Tickets")) || [];
 
-    // Obtener el último ID y asignar el nuevo ID
     const ultimoId =
       ticketsGuardados.length > 0
         ? ticketsGuardados[ticketsGuardados.length - 1].id
         : 0;
-    setTicket({ ...ticket, id: ultimoId + 1 });
+
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const email = currentUser?.email || "ejemplo@example.com";
+
+    setTicket((prevTicket) => ({
+      ...prevTicket,
+      id: ultimoId + 1,
+      usuario_creador: email,
+    }));
   }, []);
 
   // Manejar cambios en los inputs

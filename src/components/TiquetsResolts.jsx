@@ -4,8 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 export function TiquetsResolts() {
   const [arrayResueltos, setArrayResueltos] = useState([]);
   const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  // Cargar tickets al montar el componente y cuando localStorage cambie
+  const esAdmin = currentUser && currentUser.rol === "admin";
+  const esAutenticado = currentUser !== null;
+
   useEffect(() => {
     const actualizarTickets = () => {
       const ticketsGuardados =
@@ -47,47 +50,56 @@ export function TiquetsResolts() {
             <th>Descripcion</th>
             <th>Alumno</th>
             <th>Comentarios</th>
-            <th>Eliminar</th>
+            {(esAutenticado || esAdmin) && <th>Eliminar</th>}
           </tr>
         </thead>
         <tbody>
-          {arrayResueltos.map((ticket, index) => (
-            <tr
-              key={index}
-              onClick={() => handleRowClick(ticket.id)}
-              style={{ cursor: "pointer" }}
-            >
-              <td>{ticket.id}</td>
-              <td>{ticket.fecha_creacion}</td>
-              <td>{ticket.aula}</td>
-              <td>{ticket.ordenador}</td>
-              <td>{ticket.descripcion}</td>
-              <td>{ticket.usuario_creador}</td>
-              <td>
-                <Link
-                  to={`/comentarios/${ticket.id}`}
-                  className="btn btn-info"
-                  title="Ver comentarios"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <i className="bi bi-chat-left-text"></i>
-                </Link>
-              </td>
-              <td>
-                <Link
-                  to="#"
-                  className="btn btn-danger"
-                  title="Eliminar ticket"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(ticket.id);
-                  }}
-                >
-                  <i className="bi bi-trash3"></i>
-                </Link>
-              </td>
-            </tr>
-          ))}
+          {arrayResueltos.map((ticket) => {
+            const esCreador =
+              currentUser && ticket.usuario_creador === currentUser.email;
+
+            return (
+              <tr
+                key={ticket.id}
+                onClick={() => handleRowClick(ticket.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <td>{ticket.id}</td>
+                <td>{ticket.fecha_creacion}</td>
+                <td>{ticket.aula}</td>
+                <td>{ticket.ordenador}</td>
+                <td>{ticket.descripcion}</td>
+                <td>{ticket.usuario_creador}</td>
+                <td>
+                  <Link
+                    to={`/comentarios/${ticket.id}`}
+                    className="btn btn-info"
+                    title="Ver comentarios"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <i className="bi bi-chat-left-text"></i>
+                  </Link>
+                </td>
+                {esCreador || esAdmin ? (
+                  <td>
+                    <Link
+                      to="#"
+                      className="btn btn-danger"
+                      title="Eliminar ticket"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(ticket.id);
+                      }}
+                    >
+                      <i className="bi bi-trash3"></i>
+                    </Link>
+                  </td>
+                ) : esAutenticado ? (
+                  <td></td>
+                ) : null}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </>
