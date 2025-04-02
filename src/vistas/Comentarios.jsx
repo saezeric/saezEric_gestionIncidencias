@@ -1,71 +1,85 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Comentario } from "../components/Comentario";
+import { supabase } from "../bd/supabaseClient";
 
 export function Comentarios() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState("");
-  const [fechaComentario, setFechaComentario] = useState(() => {
-    return new Date().toISOString().slice(0, 16);
-  });
+  const [fechaComentario, setFechaComentario] = useState(() =>
+    new Date().toISOString().slice(0, 16)
+  );
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  useEffect(() => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    const ticketEncontrado = ticketsGuardados.find(
-      (ticket) => ticket.id === parseInt(id)
-    );
-    setTicket(ticketEncontrado);
-  }, [id]);
+  const obtenerTicket = async () => {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  const handleAddComment = () => {
-    if (!nuevoComentario.trim() || !fechaComentario) return;
-
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    const ticketIndex = ticketsGuardados.findIndex(
-      (ticket) => ticket.id === parseInt(id)
-    );
-
-    if (ticketIndex !== -1) {
-      const nuevoId =
-        ticketsGuardados[ticketIndex].comentarios.length > 0
-          ? ticketsGuardados[ticketIndex].comentarios[
-              ticketsGuardados[ticketIndex].comentarios.length - 1
-            ].id + 1
-          : 1;
-
-      const nuevoComentarioObj = {
-        id: nuevoId,
-        autor: "Usuario",
-        fecha: fechaComentario, // Se guarda en formato ISO compatible
-        texto: nuevoComentario,
-      };
-
-      ticketsGuardados[ticketIndex].comentarios.push(nuevoComentarioObj);
-      localStorage.setItem("Dades Tickets", JSON.stringify(ticketsGuardados));
-      setTicket({ ...ticketsGuardados[ticketIndex] });
-      setNuevoComentario("");
-      setFechaComentario(new Date().toISOString().slice(0, 16));
+    if (error) {
+      console.error("❌ Error al obtener ticket:", error.message);
+    } else {
+      setTicket(data);
     }
   };
 
-  const handleDeleteComment = (commentId) => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    const ticketIndex = ticketsGuardados.findIndex(
-      (ticket) => ticket.id === parseInt(id)
+  useEffect(() => {
+    obtenerTicket();
+  }, [id]);
+
+  const handleAddComment = async () => {
+    if (!nuevoComentario.trim() || !fechaComentario) return;
+
+    const comentariosActuales = ticket.comentarios || [];
+
+    const nuevoId =
+      comentariosActuales.length > 0
+        ? comentariosActuales[comentariosActuales.length - 1].id + 1
+        : 1;
+
+    const nuevoComentarioObj = {
+      id: nuevoId,
+      autor: currentUser?.email || "Anónimo",
+      fecha: fechaComentario,
+      texto: nuevoComentario,
+    };
+
+    const nuevosComentarios = [...comentariosActuales, nuevoComentarioObj];
+
+    const { error } = await supabase
+      .from("tickets")
+      .update({ comentarios: nuevosComentarios })
+      .eq("id", id);
+
+    if (error) {
+      console.error("❌ Error al añadir comentario:", error.message);
+    } else {
+      setNuevoComentario("");
+      setFechaComentario(new Date().toISOString().slice(0, 16));
+      obtenerTicket(); // Refrescar ticket actualizado
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    const comentariosActuales = ticket.comentarios || [];
+
+    const comentariosActualizados = comentariosActuales.filter(
+      (comentario) => comentario.id !== commentId
     );
 
-    if (ticketIndex !== -1) {
-      ticketsGuardados[ticketIndex].comentarios = ticketsGuardados[
-        ticketIndex
-      ].comentarios.filter((comentario) => comentario.id !== commentId);
+    const { error } = await supabase
+      .from("tickets")
+      .update({ comentarios: comentariosActualizados })
+      .eq("id", id);
 
-      localStorage.setItem("Dades Tickets", JSON.stringify(ticketsGuardados));
-      setTicket({ ...ticketsGuardados[ticketIndex] });
+    if (error) {
+      console.error("❌ Error al eliminar comentario:", error.message);
+    } else {
+      obtenerTicket(); // Refrescar
     }
   };
 
@@ -83,23 +97,18 @@ export function Comentarios() {
           <h2 className="my-4">
             Código ticket: <span>{ticket.id}</span>
           </h2>
-          <div className="">
+          <div>
             <form
               className="form card p-3 shadow"
               onSubmit={(e) => e.preventDefault()}
             >
-              <label htmlFor="comentario" className="form-label">
-                Comentario:
-              </label>
+              <label className="form-label">Comentario:</label>
               <textarea
                 className="form-control"
-                cols="3"
                 value={nuevoComentario}
                 onChange={(e) => setNuevoComentario(e.target.value)}
               ></textarea>
-              <label htmlFor="fecha" className="form-label me-2 mt-3">
-                Fecha:
-              </label>
+              <label className="form-label me-2 mt-3">Fecha:</label>
               <div className="d-flex align-items-center">
                 <input
                   type="datetime-local"

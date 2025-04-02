@@ -30,6 +30,12 @@ export function Header() {
               <Link to="/" className="btn btn-secondary">
                 PANEL
               </Link>
+              {/* Mostrar PANEL ADMIN solo si el usuario es admin */}
+              {user && user.rol === "admin" && (
+                <Link to="/panel-admin" className="btn btn-secondary">
+                  PANEL ADMIN
+                </Link>
+              )}
 
               {/* Mostrar LOGIN y REGISTRO solo si no hay usuario logueado */}
               {!user && (

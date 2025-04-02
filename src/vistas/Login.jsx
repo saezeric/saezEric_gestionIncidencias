@@ -1,7 +1,8 @@
 // Login.jsx
 import React, { useEffect, useState, useContext } from "react";
-import UserContext from "../contexts/UserContext"; // Importar el contexto
 import { useNavigate } from "react-router-dom";
+import UserContext from "../contexts/UserContext";
+import { supabase } from "../bd/supabaseClient";
 
 export function Login() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export function Login() {
   const [credenciales, setCredenciales] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
-  const { login } = useContext(UserContext); // Usar el contexto para iniciar sesión
+  const { login } = useContext(UserContext);
 
   useEffect(() => {
     const usuarioRegistrado = localStorage.getItem("registro_exitoso");
@@ -27,30 +28,30 @@ export function Login() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const usuariosGuardados =
-      JSON.parse(localStorage.getItem("dades_usuaris")) || [];
+    const { data: usuarios, error: errorBuscar } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("email", credenciales.email)
+      .single();
 
-    let usuarioEncontrado = null;
-    for (let i = 0; i < usuariosGuardados.length; i++) {
-      if (
-        usuariosGuardados[i].email === credenciales.email &&
-        usuariosGuardados[i].contraseña === credenciales.password
-      ) {
-        usuarioEncontrado = usuariosGuardados[i];
-        break;
-      }
+    if (errorBuscar) {
+      setError("Email o contraseña incorrectos.");
+      console.error("❌ Error buscando usuario:", errorBuscar.message);
+      return;
     }
 
-    if (!usuarioEncontrado) {
+    // Verificar contraseña
+    if (usuarios.contraseña !== credenciales.password) {
       setError("Email o contraseña incorrectos.");
       return;
     }
 
-    // Iniciar sesión usando el contexto
-    login(usuarioEncontrado);
+    // Iniciar sesión
+    login(usuarios); // Guardamos el usuario en el contexto
+    localStorage.setItem("currentUser", JSON.stringify(usuarios)); // También lo guardamos en localStorage
     navigate("/");
   };
 
@@ -71,7 +72,7 @@ export function Login() {
           onSubmit={handleSubmit}
         >
           <label htmlFor="email" className="mt-2 form-label">
-            Email:{" "}
+            Email:
           </label>
           <input
             id="email"
@@ -84,7 +85,7 @@ export function Login() {
           />
 
           <label htmlFor="password" className="mt-2 form-label">
-            Contraseña:{" "}
+            Contraseña:
           </label>
           <input
             id="password"
