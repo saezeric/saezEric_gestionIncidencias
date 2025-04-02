@@ -1,68 +1,64 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function EditarTicket() {
   const navigate = useNavigate();
   const { id } = useParams();
+
   const [ticket, setTicket] = useState({
-    id: 0,
-    fecha_creacion: "",
     aula: "",
     ordenador: "",
     descripcion: "",
-    estado: "pendiente",
-    usuario_creador: "",
-    comentarios: [],
   });
 
-  // Efecto que carga el ticket a editar
+  // Obtener el ticket desde Supabase por ID
   useEffect(() => {
-    // Obtener los tickets actuales del localStorage
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    const cargarTicket = async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("id", id)
+        .single(); // ← devuelve un solo objeto, no un array
 
-    // Encontrar el ticket por ID
-    const ticketEncontrado = ticketsGuardados.find(
-      (ticket) => ticket.id === parseInt(id)
-    );
+      if (error || !data) {
+        alert("❌ Ticket no encontrado");
+        navigate("/");
+      } else {
+        setTicket(data);
+      }
+    };
 
-    if (ticketEncontrado) {
-      setTicket(ticketEncontrado);
-    } else {
-      alert("Ticket no encontrado");
-      navigate("/");
-    }
+    cargarTicket();
   }, [id, navigate]);
 
-  // Manejar cambios en los inputs
   const handleChange = (e) => {
     setTicket({ ...ticket, [e.target.name]: e.target.value });
   };
 
-  // Guardar el ticket editado en localStorage
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación simple
     if (!ticket.aula || !ticket.ordenador || !ticket.descripcion) {
       alert("Todos los campos son obligatorios");
       return;
     }
 
-    // Obtener los tickets actuales del localStorage
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    const { error } = await supabase
+      .from("tickets")
+      .update({
+        aula: ticket.aula,
+        ordenador: ticket.ordenador,
+        descripcion: ticket.descripcion,
+      })
+      .eq("id", id);
 
-    // Actualizar el ticket
-    const ticketsActualizados = ticketsGuardados.map((t) =>
-      t.id === ticket.id ? ticket : t
-    );
-
-    // Guardar en localStorage
-    localStorage.setItem("Dades Tickets", JSON.stringify(ticketsActualizados));
-
-    // Redirigir al Panel
-    navigate("/");
+    if (error) {
+      alert("❌ Error al guardar cambios");
+      console.error(error);
+    } else {
+      navigate("/");
+    }
   };
 
   return (

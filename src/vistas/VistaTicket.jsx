@@ -1,38 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function VistaTicket() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [ticket, setTicket] = useState({
-    id: 0,
-    fecha_creacion: "",
-    aula: "",
-    ordenador: "",
-    descripcion: "",
-    estado: "pendiente",
-    usuario_creador: "",
-    comentarios: [],
-  });
+  const [ticket, setTicket] = useState(null);
 
-  // Efecto que carga el ticket a visualizar
   useEffect(() => {
-    // Obtener los tickets actuales del localStorage
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    const cargarTicket = async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-    // Encontrar el ticket por ID
-    const ticketEncontrado = ticketsGuardados.find(
-      (ticket) => ticket.id === parseInt(id)
-    );
+      if (error || !data) {
+        alert("Ticket no encontrado");
+        navigate("/");
+      } else {
+        setTicket(data);
+      }
+    };
 
-    if (ticketEncontrado) {
-      setTicket(ticketEncontrado);
-    } else {
-      alert("Ticket no encontrado");
-      navigate("/");
-    }
+    cargarTicket();
   }, [id, navigate]);
+
+  if (!ticket) return <p className="text-center mt-5">Cargando ticket...</p>;
 
   return (
     <main className="container mt-5">

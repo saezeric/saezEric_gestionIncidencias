@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function TiquetsResolts() {
   const [arrayResueltos, setArrayResueltos] = useState([]);
@@ -9,32 +10,52 @@ export function TiquetsResolts() {
   const esAdmin = currentUser && currentUser.rol === "admin";
   const esAutenticado = currentUser !== null;
 
+  const obtenerTicketsResueltos = async () => {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("estado", "resuelto")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Error al obtener tickets resueltos:", error.message);
+    } else {
+      setArrayResueltos(data);
+    }
+  };
+
   useEffect(() => {
-    const actualizarTickets = () => {
-      const ticketsGuardados =
-        JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-      setArrayResueltos(
-        ticketsGuardados.filter((ticket) => ticket.estado === "resuelto")
-      );
+    obtenerTicketsResueltos();
+
+    // Escuchar mensajes del canal para actualizar la pagina y mostrar los nuevos tickets resueltos
+    const canal = new BroadcastChannel("tickets-resueltos");
+    // El canal recibe un mensaje el cual traducimos como evento
+    canal.onmessage = (event) => {
+      // Si el mensaje que hemos recibido es "resuelto", llamamos a la función para obtener los tickets resueltos de nuevo
+      if (event.data === "resuelto") {
+        obtenerTicketsResueltos();
+      }
     };
 
-    actualizarTickets();
-    window.addEventListener("storage", actualizarTickets);
-    return () => window.removeEventListener("storage", actualizarTickets);
+    // Limpiar el canal para la proxima vez que tengamos que utilizarlo
+    return () => {
+      canal.close();
+    };
   }, []);
 
   const handleRowClick = (id) => {
     navigate(`/vista-ticket/${id}`);
   };
 
-  const handleDelete = (id) => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    const nuevosTickets = ticketsGuardados.filter((ticket) => ticket.id !== id);
-    localStorage.setItem("Dades Tickets", JSON.stringify(nuevosTickets));
-    setArrayResueltos(
-      nuevosTickets.filter((ticket) => ticket.estado === "resuelto")
-    );
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from("tickets").delete().eq("id", id);
+
+    if (error) {
+      alert("❌ Error al eliminar el ticket");
+      console.error(error);
+    } else {
+      obtenerTicketsResueltos(); // Refrescar la lista
+    }
   };
 
   return (
@@ -65,7 +86,13 @@ export function TiquetsResolts() {
                 style={{ cursor: "pointer" }}
               >
                 <td>{ticket.id}</td>
-                <td>{ticket.fecha_creacion}</td>
+                <td>
+                  {ticket.fecha_resolucion
+                    ? new Date(ticket.fecha_resolucion).toLocaleDateString(
+                        "es-ES"
+                      )
+                    : "—"}
+                </td>
                 <td>{ticket.aula}</td>
                 <td>{ticket.ordenador}</td>
                 <td>{ticket.descripcion}</td>
@@ -87,6 +114,7 @@ export function TiquetsResolts() {
                       className="btn btn-danger"
                       title="Eliminar ticket"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         handleDelete(ticket.id);
                       }}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function TiquetsPendents() {
   const [arrayPendientes, setArrayPendientes] = useState([]);
@@ -9,54 +10,59 @@ export function TiquetsPendents() {
   const esAdmin = currentUser && currentUser.rol === "admin";
   const esAutenticado = currentUser !== null;
 
-  // Cargar tickets al montar el componente y cuando localStorage cambie
-  useEffect(() => {
-    const actualizarTickets = () => {
-      const ticketsGuardados =
-        JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-      setArrayPendientes(
-        ticketsGuardados.filter((ticket) => ticket.estado === "pendiente")
-      );
-    };
+  const obtenerTicketsPendientes = async () => {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("estado", "pendiente")
+      .order("id", { ascending: true });
 
-    actualizarTickets();
-    window.addEventListener("storage", actualizarTickets);
-    return () => window.removeEventListener("storage", actualizarTickets);
+    if (error) {
+      console.error("Error al obtener tickets pendientes:", error.message);
+    } else {
+      setArrayPendientes(data);
+    }
+  };
+
+  useEffect(() => {
+    obtenerTicketsPendientes();
   }, []);
 
   const handleRowClick = (id) => {
     navigate(`/vista-ticket/${id}`);
   };
 
-  const handleDelete = (id) => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-    const nuevosTickets = ticketsGuardados.filter((ticket) => ticket.id !== id);
-    localStorage.setItem("Dades Tickets", JSON.stringify(nuevosTickets));
-    setArrayPendientes(
-      nuevosTickets.filter((ticket) => ticket.estado === "pendiente")
-    );
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from("tickets").delete().eq("id", id);
+
+    if (error) {
+      alert("❌ Error al eliminar el ticket");
+      console.error(error);
+    } else {
+      obtenerTicketsPendientes(); // Recargar lista
+    }
   };
 
-  const handleResolver = (id) => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+  const handleResolver = async (id) => {
+    const fechaHoy = new Date().toISOString();
 
-    const nuevosTickets = ticketsGuardados.map((ticket) => {
-      if (ticket.id === id) {
-        return {
-          ...ticket,
-          estado: "resuelto",
-          fecha_resolucion: new Date().toLocaleDateString("es-ES"),
-        };
-      }
-      return ticket;
-    });
+    const { error } = await supabase
+      .from("tickets")
+      .update({ estado: "resuelto", fecha_resolucion: fechaHoy })
+      .eq("id", id);
 
-    localStorage.setItem("Dades Tickets", JSON.stringify(nuevosTickets));
+    if (error) {
+      alert("❌ Error al resolver el ticket");
+      console.error(error);
+    } else {
+      // Eliminamos el ticket resuelto directamente del estado
+      setArrayPendientes((prev) => prev.filter((t) => t.id !== id));
+    }
 
-    // Disparar evento para actualizar otros componentes
-    window.dispatchEvent(new Event("storage"));
+    // Enviamos a Tiquets Resueltos el mensaje de que se ha resuelto un ticket y que se debe acutalizar la lista
+    const canal = new BroadcastChannel("tickets-resueltos");
+    // Enviamos un mensaje via post que recibimos en la pagina de panel, donde a su vez la utilizaremos en el componente de tickets resueltos
+    canal.postMessage("resuelto");
   };
 
   return (
@@ -88,7 +94,9 @@ export function TiquetsPendents() {
                 style={{ cursor: "pointer" }}
               >
                 <td>{ticket.id}</td>
-                <td>{ticket.fecha_creacion}</td>
+                <td>
+                  {new Date(ticket.fecha_creacion).toLocaleDateString("es-ES")}
+                </td>
                 <td>{ticket.aula}</td>
                 <td>{ticket.ordenador}</td>
                 <td>{ticket.descripcion}</td>
@@ -100,6 +108,7 @@ export function TiquetsPendents() {
                       className="btn btn-success"
                       title="Resolver ticket"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         handleResolver(ticket.id);
                       }}
@@ -139,6 +148,7 @@ export function TiquetsPendents() {
                       className="btn btn-danger"
                       title="Eliminar ticket"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         handleDelete(ticket.id);
                       }}

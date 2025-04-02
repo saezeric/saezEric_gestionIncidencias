@@ -1,66 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function NuevoTicket() {
   const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
   const [ticket, setTicket] = useState({
-    id: 0, // Generar un ID único
-    fecha_creacion: new Date().toLocaleDateString("es-ES"),
     aula: "",
     ordenador: "",
     descripcion: "",
-    estado: "pendiente",
-    usuario_creador: "ejemplo@example.com", // Temporalmente estático, luego se puede vincular al usuario logueado
-    comentarios: [],
   });
 
-  // Efecto que actualizara la ID al ultimo ID posible
-  useEffect(() => {
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
-
-    const ultimoId =
-      ticketsGuardados.length > 0
-        ? ticketsGuardados[ticketsGuardados.length - 1].id
-        : 0;
-
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    const email = currentUser?.email || "ejemplo@example.com";
-
-    setTicket((prevTicket) => ({
-      ...prevTicket,
-      id: ultimoId + 1,
-      usuario_creador: email,
-    }));
-  }, []);
-
-  // Manejar cambios en los inputs
   const handleChange = (e) => {
     setTicket({ ...ticket, [e.target.name]: e.target.value });
   };
 
-  // Guardar el ticket en localStorage
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación simple
     if (!ticket.aula || !ticket.ordenador || !ticket.descripcion) {
       alert("Todos los campos son obligatorios");
       return;
     }
 
-    // Obtener los tickets actuales del localStorage
-    const ticketsGuardados =
-      JSON.parse(localStorage.getItem("Dades Tickets")) || [];
+    const nuevoTicket = {
+      fecha_creacion: new Date().toISOString(), // Formato válido para timestamp
+      aula: ticket.aula,
+      ordenador: ticket.ordenador,
+      descripcion: ticket.descripcion,
+      estado: "pendiente",
+      usuario_creador: currentUser?.email || "ejemplo@example.com",
+      comentarios: [], // JSON vacío por defecto
+    };
 
-    // Agregar el nuevo ticket
-    ticketsGuardados.push(ticket);
+    const { error } = await supabase.from("tickets").insert(nuevoTicket);
 
-    // Guardar en localStorage
-    localStorage.setItem("Dades Tickets", JSON.stringify(ticketsGuardados));
-
-    // Redirigir al Panel
-    navigate("/");
+    if (error) {
+      console.error("❌ Error al crear ticket:", error.message);
+      alert("No se pudo crear el ticket.");
+    } else {
+      navigate("/");
+    }
   };
 
   return (

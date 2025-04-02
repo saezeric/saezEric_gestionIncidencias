@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../bd/supabaseClient";
 
 export function Registro() {
   const navigate = useNavigate();
@@ -7,51 +8,59 @@ export function Registro() {
     email: "",
     password: "",
   });
-  const [error, setError] = useState(""); // Estado para mensaje de error
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setUsuario({ ...usuario, [e.target.name]: e.target.value });
-    setError(""); // Limpiar error cuando el usuario escriba
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let usuariosGuardados =
-      JSON.parse(localStorage.getItem("dades_usuaris")) || [];
+    const email = usuario.email.trim();
+    const password = usuario.password.trim();
 
-    // Verificar si el email ya existe
-    for (let i = 0; i < usuariosGuardados.length; i++) {
-      if (usuariosGuardados[i].email === usuario.email) {
-        setError("Este email ya está registrado.");
-        return;
-      }
+    const { data: usuarioExistente, error: errorBuscar } = await supabase
+      .from("usuarios")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (usuarioExistente) {
+      setError("Este email ya está registrado.");
+      return;
     }
 
-    // Obtener el último ID utilizado y sumarle 1
-    let nuevoId = 1;
-    if (usuariosGuardados.length > 0) {
-      const ultimoUsuario = usuariosGuardados[usuariosGuardados.length - 1];
-      nuevoId = ultimoUsuario.id + 1;
+    // errorBuscar solo existe si ocurrió algún error en la consulta .select(...) a Supabase.
+    // Este código de error (PGRST116) significa "No se encontró ningún registro", es decir, el email no existe todavía, lo cual es esperado en el contexto del registro.
+    // Si hay un error (errorBuscar) y NO es el típico error de que no se encontró nada (PGRST116), entonces sí que es un error real que hay que mostrar.
+    if (errorBuscar && errorBuscar.code !== "PGRST116") {
+      console.error("Error al verificar el usuario:", errorBuscar.message);
+      setError("Error al verificar el correo.");
+      return;
     }
 
-    // Crear nuevo usuario
-    const nuevoUsuario = {
-      id: nuevoId,
-      nombre: usuario.email.split("@")[0],
-      email: usuario.email,
-      contraseña: usuario.password,
-      rol: "alumno",
-    };
+    const nombre = email.split("@")[0];
 
-    // Guardar el nuevo usuario en localStorage
-    usuariosGuardados.push(nuevoUsuario);
-    localStorage.setItem("dades_usuaris", JSON.stringify(usuariosGuardados));
+    const { error: errorInsertar } = await supabase.from("usuarios").insert([
+      {
+        nombre,
+        email,
+        contraseña: password,
+        rol: "alumno",
+      },
+    ]);
 
-    // Guardar mensaje de éxito en localStorage
-    localStorage.setItem("registro_exitoso", usuario.email);
+    if (errorInsertar) {
+      console.error("Error al registrar el usuario:", errorInsertar.message);
+      setError("No se pudo completar el registro.");
+      return;
+    }
 
-    // Redirigir al login
+    // ✅ Restaurar mensaje de éxito
+    localStorage.setItem("registro_exitoso", email);
+
     navigate("/login");
   };
 
@@ -64,9 +73,8 @@ export function Registro() {
           className="form p-4 border shadow mt-5 mx-auto"
           style={{ width: "400px" }}
         >
-          {/* Email */}
           <label htmlFor="email" className="mt-2 form-label">
-            Email:{" "}
+            Email:
           </label>
           <input
             id="email"
@@ -80,9 +88,8 @@ export function Registro() {
           />
           {error && <div className="invalid-feedback">{error}</div>}
 
-          {/* Contraseña */}
           <label htmlFor="password" className="mt-2 form-label">
-            Contraseña:{" "}
+            Contraseña:
           </label>
           <input
             id="password"

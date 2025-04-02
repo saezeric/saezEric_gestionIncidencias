@@ -1,43 +1,77 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "../bd/supabaseClient";
 
 export function PanelAdmin() {
   const [usuarios, setUsuarios] = useState([]);
 
+  // Obtener usuarios al montar
   useEffect(() => {
-    const datos = JSON.parse(localStorage.getItem("dades_usuaris")) || [];
-    setUsuarios(datos);
+    const fetchUsuarios = async () => {
+      const { data, error } = await supabase.from("usuarios").select("*");
+
+      if (error) {
+        console.error("Error al obtener usuarios:", error.message);
+      } else {
+        setUsuarios(data);
+      }
+    };
+
+    fetchUsuarios();
   }, []);
 
+  // Cambiar rol en el estado local
   const handleRoleChange = (id, nuevoRol) => {
-    setUsuarios((prevUsuarios) =>
-      prevUsuarios.map((usuario) =>
-        usuario.id === id ? { ...usuario, rol: nuevoRol } : usuario
-      )
+    setUsuarios((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, rol: nuevoRol } : u))
     );
   };
 
-  const handleGuardarCambios = () => {
-    localStorage.setItem("dades_usuaris", JSON.stringify(usuarios));
-    alert("Cambios guardados correctamente.");
+  // Guardar cambios de roles en Supabase
+  const handleGuardarCambios = async () => {
+    let exitos = 0;
+    for (const usuario of usuarios) {
+      const { error } = await supabase
+        .from("usuarios")
+        .update({ rol: usuario.rol })
+        .eq("id", usuario.id);
+
+      if (!error) exitos++;
+      else
+        console.error(
+          "Error al actualizar usuario:",
+          usuario.email,
+          error.message
+        );
+    }
+
+    if (exitos === usuarios.length) {
+      alert("✅ Todos los cambios se han guardado correctamente.");
+    } else {
+      alert("⚠️ Algunos cambios no se pudieron guardar. Revisa la consola.");
+    }
   };
 
-  const handleEliminarUsuario = (id) => {
-    const confirmacion = window.confirm(
+  // Eliminar usuario en Supabase
+  const handleEliminarUsuario = async (id) => {
+    const confirmar = window.confirm(
       "¿Estás seguro de que quieres eliminar este usuario?"
     );
-    if (!confirmacion) return;
+    if (!confirmar) return;
 
-    const usuariosActualizados = usuarios.filter(
-      (usuario) => usuario.id !== id
-    );
-    setUsuarios(usuariosActualizados);
-    localStorage.setItem("dades_usuaris", JSON.stringify(usuariosActualizados));
+    const { error } = await supabase.from("usuarios").delete().eq("id", id);
+
+    if (error) {
+      alert("❌ No se pudo eliminar el usuario.");
+      console.error(error);
+    } else {
+      // Actualizar la tabla en pantalla
+      setUsuarios((prev) => prev.filter((u) => u.id !== id));
+    }
   };
 
   return (
     <main className="container mt-5">
       <h1 className="mb-4 text-center">Panel de Administración de Usuarios</h1>
-
       <div className="d-flex justify-content-center mb-3">
         <button className="btn btn-primary" onClick={handleGuardarCambios}>
           Guardar Cambios
